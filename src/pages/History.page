@@ -1,0 +1,26 @@
+<apex:page controller="HistoryControllerExtension" showheader="false">
+<apex:pageBlock >
+	<apex:outputLink value="/apex/itil_p__vfem_IncidentHistory?id={!$CurrentPage.parameters.id}&popout=true" target="_blank" rendered="{!IF($CurrentPage.parameters.popout = 'true','false','true')}">View in a new window</apex:outputLink>
+                <apex:pageBlockTable value="{!thisHistory.events}" var="event">
+                    <apex:column >
+                        <apex:facet name="header">Timestamp</apex:facet>
+                        <apex:outputText value="{!event.formatted}" />
+                    </apex:column> 
+                    <apex:column width="15%">
+                        <apex:facet name="header">Action</apex:facet>
+                        <apex:outputText value="{!event.eventType}" />
+                    </apex:column>
+                    <apex:column >
+                        <apex:facet name="header">Description</apex:facet>
+                        <apex:outputLink value="/{!event.detailID}" rendered="{!NOT(ISNULL(event.detailID))}" target="_blank">
+                            <apex:outputText value="{!event.description}" />
+                        </apex:outputLink>
+                        <apex:outputText value="{!event.description}" rendered="{!ISNULL(event.detailID)}" />
+                    </apex:column>
+                    <apex:column >
+                        <apex:facet name="header">Modified By</apex:facet>
+                        <apex:outputText value="{!event.modifiedBy.name}" />
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlock>
+</apex:page>

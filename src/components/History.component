@@ -1,0 +1,41 @@
+<apex:component controller="ComponentHistory">
+    <!-- This component takes any queryable sObject and aggregates field history and child objects into a single chronologically sorted table.
+        Detail or linked objects being added will result in a clickable link to that object. -->
+        
+    <apex:attribute name="subject" assignTo="{!subject}" required="true" type="sObject"
+        description="The sObject for this component to show the history for." />
+    <apex:attribute name="itemsPerPage" type="integer" required="false" default="5"
+        description="Maximum number of items to show. If the list have more than this, a pagination will be added." />
+    
+    {!init}
+    
+    <div id="pagingHistory" class="PajinateContent">
+        <div class="PajinateHeader">
+            <div class="c50">Date</div>
+            <div class="c100">Type</div>
+            <div class="c200">Description</div>
+            <div class="c110 noBorderRight">User</div>
+        </div>
+        <apex:outputPanel rendered="{!IF(thisHistory.events.size <= 0, 'true', 'false')}">
+            <ul class="PajinateList"><li><div>There are no events to display.</div></li></ul>
+        </apex:outputPanel>
+        <apex:dataList value="{!thisHistory.events}" var="event" id="RelList" styleClass="PajinateList">
+            <div class="c50">{!event.shortDate}</div>
+            <div class="c100">{!event.eventType}</div>
+            <div class="c200">
+                <apex:outputLink value="/{!event.detailId}" disabled="{!ISNULL(event.detailID)}">
+                    <apex:outputText value="{!event.description}" />
+                </apex:outputLink>
+            </div>
+            <div class="c110">{!event.modifiedBy.name}</div>
+        </apex:dataList>
+        <div style="float:left; padding: 7px 0 5px 10px;" >
+            <apex:outputLink value="/apex/itil_p__History?id={!subject.id}&popout=true" rendered="{!thisHistory.events.size > 1}" >
+                <apex:outputText value="Total Records: {!thisHistory.events.size}" />
+            </apex:outputLink>
+        </div>
+        <apex:outputText rendered="{!IF(thisHistory.events.size > 6, 'true', 'false')}">
+            <div class="page_navigation"></div>
+        </apex:outputText>
+    </div>
+</apex:component>
