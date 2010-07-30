@@ -82,7 +82,7 @@ public with sharing class History {
 	private void addActivities(List<sObject> activities){
 		HistoryEvent event;
 		string activityType;
-		Map<id,User> users = new Map<id,User>([SELECT id, name FROM User WHERE id IN :itil_b.Util.getIdFields(activities,'CreatedById')]);
+		Map<id,User> users = new Map<id,User>([SELECT id, name FROM User WHERE id IN :Util.getIdFields(activities,'CreatedById')]);
 		
 		
 		for(sObject thisActivity:activities){
@@ -133,7 +133,7 @@ public with sharing class History {
 	private void addGeneric(List<sObject> objects){
 		HistoryEvent event;
 		string objectType;
-		Map<id,User> users = new Map<id,User>([SELECT id, name FROM User WHERE id IN :itil_b.Util.getIdFields(objects,'CreatedById')]);
+		Map<id,User> users = new Map<id,User>([SELECT id, name FROM User WHERE id IN :Util.getIdFields(objects,'CreatedById')]);
 		
 		for(sObject thisObject:objects){
 			if( objectType == null ) { objectType = thisObject.getSObjectType().getDescribe().getLabel(); } 
