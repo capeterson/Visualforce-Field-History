@@ -12,7 +12,6 @@ global with sharing class Util {
 		return retval;
 	}
 	
-	}
 	/**
 	 * Get a string field from an array of objects, and return those fields in an array.
 	 * @author cpeterson

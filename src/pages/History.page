@@ -1,6 +1,6 @@
 <apex:page controller="HistoryControllerExtension" showheader="false">
 <apex:pageBlock >
-	<apex:outputLink value="/apex/itil_p__vfem_IncidentHistory?id={!$CurrentPage.parameters.id}&popout=true" target="_blank" rendered="{!IF($CurrentPage.parameters.popout = 'true','false','true')}">View in a new window</apex:outputLink>
+	<apex:outputLink value="/apex/vfem_IncidentHistory?id={!$CurrentPage.parameters.id}&popout=true" target="_blank" rendered="{!IF($CurrentPage.parameters.popout = 'true','false','true')}">View in a new window</apex:outputLink>
                 <apex:pageBlockTable value="{!thisHistory.events}" var="event">
                     <apex:column >
                         <apex:facet name="header">Timestamp</apex:facet>
