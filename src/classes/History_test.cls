@@ -1,36 +1,36 @@
 @isTest
 private class History_test {
 	static testmethod void testNotes(){
-		itil_b__Incident__c thisIncident = new itil_b__Incident__c();
-		insert thisIncident;
+		Custom_Object__c customObject = new Custom_Object__c();
+		insert customObject;
 		
-		History incidentHistory = new History(thisIncident);
-		incidentHistory.buildEntries();
-		System.assertEquals(0,incidentHistory.events.size());
+		History objHistory = new History(customObject);
+		objHistory.buildEntries();
+		System.assertEquals(0,objHistory.events.size());
 		
-		Note newNote = new Note(parentId = thisIncident.id, title = 'a new note');
+		Note newNote = new Note(parentId = customObject.id, title = 'a new note');
 		insert newNote;
-		incidentHistory.buildEntries();
-		System.assertEquals(1,incidentHistory.events.size());
+		objHistory.buildEntries();
+		System.assertEquals(1,objHistory.events.size());
 		
 	}
 	
 	static testmethod void testActivities(){
-		itil_b__Incident__c thisIncident = new itil_b__Incident__c();
-		insert thisIncident;
+		Custom_Object__c customObject = new Custom_Object__c();
+		insert customObject;
 		
-		History incidentHistory = new History(thisIncident);
-		incidentHistory.buildEntries();
-		System.assertEquals(0,incidentHistory.events.size());
+		History objHistory = new History(customObject);
+		objHistory.buildEntries();
+		System.assertEquals(0,objHistory.events.size());
 		
-		Task newTask = new Task(whatId = thisIncident.id, subject='a new Task');
+		Task newTask = new Task(whatId = customObject.id, subject='a new Task');
 		insert newTask;
 		
-		Event newEvent = new Event(whatId = thisIncident.id,  subject='a new event', DurationInMinutes = 30, ActivityDateTime = Datetime.now(), RecordTypeId = itil_b.Util.getRecordType('Event','ChangeWindow').id );
+		Event newEvent = new Event(whatId = customObject.id,  subject='a new event', DurationInMinutes = 30, ActivityDateTime = Datetime.now() );
 		insert newEvent;
 		
-		incidentHistory.buildEntries();
-		System.assertEquals(2,incidentHistory.events.size());
+		objHistory.buildEntries();
+		System.assertEquals(2,objHistory.events.size());
 		
 	}
 	
@@ -39,44 +39,25 @@ private class History_test {
 		Contact newContact = new Contact(LastName = 'Bob');
 		
 		insert newContact;
-		itil_b__Incident__c thisIncident = new itil_b__Incident__c();
-		insert thisIncident;
+		Custom_Object__c customObject = new Custom_Object__c();
+		insert customObject;
 		
-		History incidentHistory = new History(thisIncident);
-		incidentHistory.buildEntries();
-		System.assertEquals(0,incidentHistory.events.size());
+		History objHistory = new History(customObject);
+		objHistory.buildEntries();
+		System.assertEquals(0,objHistory.events.size());
 		
-		thisIncident.itil_b__subject__c = 'new subject';
-		update thisIncident;
+		customObject.Text_field__c = 'new subject';
+		update customObject;
 		
-		thisIncident.itil_b__Contact__c = newContact.id;
-		update thisIncident;
-		
-		itil_b__Incident__history thisHistory = new itil_b__Incident__history(parentId = thisIncident.id, field = 'created');
+		Custom_Object__history thisHistory = new Custom_Object__history(parentId = customObject.id, field = 'created');
 		insert thisHistory;
 		
 		History.FieldHistory thisUpdate = new History.FieldHistory(null, 'oldVal', 'newVal', DateTime.now(), 'itil_b__subject__c');
-		incidentHistory.injectedResults.add(thisUpdate);
+		objHistory.injectedResults.add(thisUpdate);
 		
-		incidentHistory.buildEntries(); 
-		System.debug('\nIncident History: '+incidentHistory.events);
+		objHistory.buildEntries(); 
+		System.debug('\nIncident History: '+objHistory.events);
 		
 	}
 	
-	static testmethod void testGeneric(){
-		Contact newContact = new Contact(LastName = 'Bob');
-		insert newContact;
-		itil_b__Incident__c thisIncident = new itil_b__Incident__c(itil_b__Contact__c = newContact.id);
-		insert thisIncident;
-		
-		History incidentHistory = new History(thisIncident);
-		incidentHistory.buildEntries();
-		System.assertEquals(0,incidentHistory.events.size());
-		
-		itil_b__Worklog__c newWorklog = new itil_b__Worklog__c(itil_b__incident__c = thisIncident.id, name = 'a new worklog');
-		insert newWorklog;
-		
-		incidentHistory.buildEntries();
-		System.assertEquals(1,incidentHistory.events.size());
-	}
 }
