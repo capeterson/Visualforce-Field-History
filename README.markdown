@@ -5,3 +5,5 @@ Currently it only supports custom objects, but the changes required to support s
 ![](http://github.com/capeterson/Visualforce-Field-History/raw/master/screenshot.png)
 
 If you want to help, think about adding support for pulling in chatter tracked field changes as well.
+
+This repository is avilable under a BSD license for use.
