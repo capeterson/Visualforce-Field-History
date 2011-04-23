@@ -1,0 +1,3 @@
+<apex:page standardController="Custom_Object__c">
+	<c:History subject="{!Custom_Object__c}" />
+</apex:page>
