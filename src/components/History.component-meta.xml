@@ -3,9 +3,4 @@
     <apiVersion>19.0</apiVersion>
     <description>This is a generic template for Apex Component.  With this template, you may adjust the default elements and values and add new elements and values.</description>
     <label>History</label>
-    <packageVersions>
-        <majorNumber>2</majorNumber>
-        <minorNumber>2020</minorNumber>
-        <namespace>itil_b</namespace>
-    </packageVersions>
 </ApexComponent>
