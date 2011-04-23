@@ -2,4 +2,4 @@ Visualforce Field History is a visualforce component and apex classes for readin
 
 Currently it only supports custom objects, but the changes required to support standard objects shouldn't be too much extra work. If you care about it make an issue and I'll see about adding that support.
 
-![](http://github.com/capeterson/Visualforce-Field-History/blob/master/screenshot.png)
+![](http://github.com/capeterson/Visualforce-Field-History/raw/master/screenshot.png)
