@@ -2,8 +2,13 @@ Visualforce Field History is a visualforce component and apex classes for readin
 
 Currently it only supports custom objects, but the changes required to support standard objects shouldn't be too much extra work. If you care about it make an issue and I'll see about adding that support.
 
-![](http://github.com/capeterson/Visualforce-Field-History/raw/master/screenshot.png)
 
 If you want to help, think about adding support for pulling in chatter tracked field changes as well.
 
 This repository is avilable under a BSD license for use.
+
+History component in it's default state dropped into a showHeader="false" visualforce page:
+![](http://github.com/capeterson/Visualforce-Field-History/raw/master/screenshot-default.png)
+
+History component used in it's original form in Bluehawk InSite:
+![](http://github.com/capeterson/Visualforce-Field-History/raw/master/screenshot.png)
