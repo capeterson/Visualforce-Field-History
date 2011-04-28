@@ -6,6 +6,7 @@
  **/
 public with sharing class History {
 	public sObject subject {get; set;}
+	public boolean includeChatter {get; private set;}
 	public List<HistoryEvent> events {get; set;}
 	public transient Schema.DescribesObjectResult objectType {get; set;}
 	public List<FieldHistory> injectedResults = new List<FieldHistory>(); //DO NOT POPULATE OUTSIDE OF TESTS!
@@ -14,9 +15,32 @@ public with sharing class History {
 	public History(sObject subject){
 		this.subject = subject;
 		this.events = new List<HistoryEvent>();
+		this.includeChatter = false;
 		
 		objectType = subject.getsObjectType().getDescribe();
-		fields = objectType.fields.getMap();
+		fields = new Map<String,Schema.sObjectField>();
+		Map<String,Schema.sObjectField> caseSensitiveFields = objectType.fields.getMap();
+		for(String key:caseSensitiveFields.keySet()){
+			fields.put(
+				key.toLowerCase(),
+				caseSensitiveFields.get(key)
+			);
+		}
+	}
+	public History(sObject subject, boolean includeChatter){
+		this.subject = subject;
+		this.events = new List<HistoryEvent>();
+		this.includeChatter = includeChatter;
+		
+		objectType = subject.getsObjectType().getDescribe();
+		fields = new Map<String,Schema.sObjectField>();
+		Map<String,Schema.sObjectField> caseSensitiveFields = objectType.fields.getMap();
+		for(String key:caseSensitiveFields.keySet()){
+			fields.put(
+				key.toLowerCase(),
+				caseSensitiveFields.get(key)
+			);
+		}
 	}
 	
 	public void buildEntries(){
@@ -24,7 +48,8 @@ public with sharing class History {
 		Schema.Describesobjectresult r = subject.getSObjectType().getDescribe();
 		List<Schema.ChildRelationship> C = R.getChildRelationships();
 		
-		List<string> result = new List<string>();
+		if(includeChatter)
+			addChatter();
 		HistoryEvent event;
 		for(Schema.Childrelationship child:C){
 			string childName = child.getChildsObject().getDescribe().getName();
@@ -42,10 +67,10 @@ public with sharing class History {
 				} else if(childName.contains('__History')){
 					if(injectedResults.size() > 0){
 						//this is from inside a test
-						addHistory( injectedResults );
+						addHistory( injectedResults , 'Record Edited');
 					} else {
 						query = 'SELECT id, field, oldValue, newValue, CreatedById, CreatedDate FROM '+child.getChildsObject().getDescribe().getName()+' WHERE '+child.getField()+' = \''+subject.id+'\'';
-						addHistory( uglyHack( Database.Query(query) ) );
+						addHistory( uglyHack( Database.Query(query) ), 'Record Edited' );
 					}
 				}else if(childName.contains('PartnerNetwork') 
 					|| childName == 'ProcessInstance'
@@ -69,7 +94,24 @@ public with sharing class History {
 		quicksort(events, 0, events.size() -1 );
 	}
 
-	
+	private void addChatter(){
+		String feedName = subject.getSObjectType().getDescribe().getName().replace('__c', '__Feed');
+		List<FieldHistory> histories = new List<FieldHistory>();
+		for(sObject item:Database.query('SELECT id, CreatedDate, CreatedById, (SELECT id, fieldName, oldValue, newValue FROM FeedTrackedChanges) FROM '+feedName+' WHERE parentId = \''+subject.id+'\' AND Type = \'TrackedChange\'')){
+			for(FeedTrackedChange fieldChange:item.getSObjects('FeedTrackedChanges')){
+				histories.add( 
+					new FieldHistory(
+						(id) item.get('createdById'),
+						fieldChange.get('oldValue')+'',
+						fieldChange.get('newValue')+'',
+						(DateTime) item.get('createdDate'),
+						(''+fieldChange.get('FieldName')).replaceFirst('.+\\.','') //chatter tracked fields start with the object name, so we cut off up to the .
+					)
+				);
+			}
+		}
+		this.addHistory(histories, 'Chatter Tracking');
+	}	
 	private void addNotes(List<Note> notes){
 		HistoryEvent event;
 		for(Note thisNote:notes){
@@ -97,7 +139,7 @@ public with sharing class History {
 
 		}
 	}
-	private void addHistory(List<FieldHistory> fieldChanges){
+	private void addHistory(List<FieldHistory> fieldChanges, String eventType){
 		HistoryEvent event;
 		String tableName = objectType.getName();
 		tableName = tableName.replace('__c','');
@@ -120,12 +162,10 @@ public with sharing class History {
 			
 			if(!isJunk){
 				String description = parseFieldHistory(fieldChange);
-				System.debug('Found description: '+description);
 				event = new HistoryEvent(
 					users.get( fieldChange.CreatedById ),
 					fieldChange.CreatedDate, 
-					description, 'Record edited');
-				System.debug('This event is: '+event);
+					description, eventType);
 				events.add(event);
 			}
 		}
@@ -152,14 +192,13 @@ public with sharing class History {
     	string result = 'this is a bad value';
     	string oldValue = fieldHistory.oldValue;
     	string newValue = fieldHistory.newValue;
-    	System.debug('FieldHistory field value is: '+fieldHistory.Field);
     	
     	if(String.ValueOf( fieldHistory.Field ) == 'created'){
     		return 'Created';
     	} //special case for the special created field
     	
     	//Get the label for the related field. We don't want to show the developerName in the UI
-    	Schema.sObjectField F = fields.get( fieldHistory.Field );
+    	Schema.sObjectField F = fields.get( fieldHistory.Field.toLowerCase() );
     	string fieldLabel;
     	try{
     		if(fieldHistory.field == 'RecordType'){
@@ -170,6 +209,8 @@ public with sharing class History {
     	} catch (System.Nullpointerexception e){
     		if(fieldHistory.field == 'Owner'){
     			fieldLabel = 'Owner';
+    		}else{
+    			system.assert(false,fieldHistory.field.toLowerCase()+'; '+F);
     		}
     		//fieldLabel = F.getDescribe().getName();
     	}
