@@ -52,8 +52,8 @@ private class History_test {
 		Custom_Object__history thisHistory = new Custom_Object__history(parentId = customObject.id, field = 'created');
 		insert thisHistory;
 		
-		History.FieldHistory thisUpdate = new History.FieldHistory(null, 'oldVal', 'newVal', DateTime.now(), 'itil_b__subject__c');
-		objHistory.injectedResults.add(thisUpdate);
+		History.FieldHistory thisUpdate = new History.FieldHistory(null, 'oldVal', 'newVal', DateTime.now(), 'text_field__c');
+		objHistory.injectedResults = new List<History.FieldHistory>{ thisUpdate };
 		
 		objHistory.buildEntries(); 
 		System.debug('\nIncident History: '+objHistory.events);
