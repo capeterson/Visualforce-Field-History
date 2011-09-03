@@ -35,7 +35,7 @@
     <deploymentStatus>Deployed</deploymentStatus>
     <description>This is a sample custom object used in apex tests for the history parsing class.</description>
     <enableActivities>true</enableActivities>
-    <enableFeeds>false</enableFeeds>
+    <enableFeeds>true</enableFeeds>
     <enableHistory>true</enableHistory>
     <enableReports>false</enableReports>
     <fields>
@@ -43,7 +43,8 @@
         <defaultValue>false</defaultValue>
         <externalId>false</externalId>
         <label>Checkbox Field</label>
-        <trackHistory>false</trackHistory>
+        <trackFeedHistory>true</trackFeedHistory>
+        <trackHistory>true</trackHistory>
         <type>Checkbox</type>
     </fields>
     <fields>
@@ -52,14 +53,21 @@
         <label>Text Field</label>
         <length>255</length>
         <required>false</required>
-        <trackHistory>false</trackHistory>
+        <trackFeedHistory>true</trackFeedHistory>
+        <trackHistory>true</trackHistory>
         <type>Text</type>
         <unique>false</unique>
     </fields>
     <label>Custom Object</label>
+    <listViews>
+        <fullName>All</fullName>
+        <filterScope>Everything</filterScope>
+        <label>All</label>
+    </listViews>
     <nameField>
         <label>Custom Object Name</label>
-        <trackHistory>false</trackHistory>
+        <trackFeedHistory>true</trackFeedHistory>
+        <trackHistory>true</trackHistory>
         <type>Text</type>
     </nameField>
     <pluralLabel>Custom Objects</pluralLabel>
