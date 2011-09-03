@@ -99,9 +99,18 @@ public with sharing class History {
 	}
 
 	private void addChatter(){
-		String feedName = subject.getSObjectType().getDescribe().getName().replace('__c', '__Feed');
+		String feedName;
+		Schema.DescribeSObjectResult describe = subject.getSObjectType().getDescribe();
+		
+		if(describe.isCustom()){ //feeds have different naming schemes for standard vs custom objects
+			feedName = describe.getName().replace('__c', '__Feed');
+		}else{
+			feedName = describe.getName() + 'Feed'; 
+		}
 		List<FieldHistory> histories = new List<FieldHistory>();
-		for(sObject item:Database.query('SELECT id, CreatedDate, CreatedById, (SELECT id, fieldName, oldValue, newValue FROM FeedTrackedChanges) FROM '+feedName+' WHERE parentId = \''+subject.id+'\' AND Type = \'TrackedChange\'')){
+		String queryString = 'SELECT id, CreatedDate, CreatedById, (SELECT id, fieldName, oldValue, newValue FROM FeedTrackedChanges) FROM '+feedName+' WHERE parentId = \''+subject.id+'\' AND Type = \'TrackedChange\'';
+		System.debug('Running query: '+queryString);
+		for(sObject item:Database.query(queryString)){
 			for(FeedTrackedChange fieldChange:item.getSObjects('FeedTrackedChanges')){
 				histories.add( 
 					new FieldHistory(
