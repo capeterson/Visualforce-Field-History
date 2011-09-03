@@ -9,7 +9,11 @@ public with sharing class History {
 	public boolean includeChatter {get; private set;}
 	public List<HistoryEvent> events {get; set;}
 	public transient Schema.DescribesObjectResult objectType {get; set;}
-	public List<FieldHistory> injectedResults = new List<FieldHistory>(); //DO NOT POPULATE OUTSIDE OF TESTS!
+	public List<FieldHistory> injectedResults {get; set{
+			System.assert(Test.isRunningTest(),'injectedResults may only be set inside of test methods.');
+			injectedResults = value;
+		}
+	}
 	private Map<string,Schema.sObjectField> fields;
 	
 	public History(sObject subject){
@@ -65,8 +69,8 @@ public with sharing class History {
 					addActivities( Database.Query(query) );
 					
 				} else if(childName.contains('__History')){
-					if(injectedResults.size() > 0){
-						//this is from inside a test
+					if(injectedResults != null ){
+						//this is from inside a test - run some special logic
 						addHistory( injectedResults , 'Record Edited');
 					} else {
 						query = 'SELECT id, field, oldValue, newValue, CreatedById, CreatedDate FROM '+child.getChildsObject().getDescribe().getName()+' WHERE '+child.getField()+' = \''+subject.id+'\'';
@@ -212,7 +216,6 @@ public with sharing class History {
     		}else{
     			system.assert(false,fieldHistory.field.toLowerCase()+'; '+F);
     		}
-    		//fieldLabel = F.getDescribe().getName();
     	}
     	System.debug('Field label is: '+fieldLabel);
     	
