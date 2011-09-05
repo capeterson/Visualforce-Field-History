@@ -23,13 +23,7 @@ public with sharing class History {
 		
 		objectType = subject.getsObjectType().getDescribe();
 		fields = new Map<String,Schema.sObjectField>();
-		Map<String,Schema.sObjectField> caseSensitiveFields = objectType.fields.getMap();
-		for(String key:caseSensitiveFields.keySet()){
-			fields.put(
-				key.toLowerCase(),
-				caseSensitiveFields.get(key)
-			);
-		}
+		fields = SchemaUtil.getFieldDescribes(objectType.getSObjectType());
 	}
 	public History(sObject subject, boolean includeChatter){
 		this.subject = subject;
@@ -38,7 +32,7 @@ public with sharing class History {
 		
 		objectType = subject.getsObjectType().getDescribe();
 		fields = new Map<String,Schema.sObjectField>();
-		Map<String,Schema.sObjectField> caseSensitiveFields = objectType.fields.getMap();
+		Map<String,Schema.sObjectField> caseSensitiveFields = SchemaUtil.getFieldDescribes( subject.getSObjectType() );
 		for(String key:caseSensitiveFields.keySet()){
 			fields.put(
 				key.toLowerCase(),
@@ -206,27 +200,27 @@ public with sharing class History {
     	string oldValue = fieldHistory.oldValue;
     	string newValue = fieldHistory.newValue;
     	
+    	string fieldLabel;
+    	
     	if(String.ValueOf( fieldHistory.Field ) == 'created'){
     		return 'Created';
     	} //special case for the special created field
     	
     	//Get the label for the related field. We don't want to show the developerName in the UI
     	Schema.sObjectField F = fields.get( fieldHistory.Field.toLowerCase() );
-    	string fieldLabel;
-    	try{
-    		if(fieldHistory.field == 'RecordType'){
-    			fieldLabel = 'Record Type'; //Record type is 'special' and doesn't have a label.
-    		} else {
-    			fieldLabel = F.getDescribe().getLabel();
+    	
+    	if( F == null ||  (!F.getDescribe().isCustom() && F.getDescribe().isIdLookup()) ){
+    		F = fields.get( fieldHistory.Field.toLowerCase()+'id' ); //standard lookup fields have to be queried with Id at the end just to make life hard.
+    		for(String key: fields.keySet()){
+    			System.debug(key);
     		}
-    	} catch (System.Nullpointerexception e){
-    		if(fieldHistory.field == 'Owner'){
-    			fieldLabel = 'Owner';
-    		}else{
-    			system.assert(false,fieldHistory.field.toLowerCase()+'; '+F);
-    		}
+    		fieldLabel = F.getDescribe().getLabel();
+    		fieldLabel = fieldLabel.substring(0,fieldLabel.length() - 3); //Cut off the space ID part of the label.
+    	}else{
+    		fieldLabel = F.getDescribe().getLabel();
     	}
-    	System.debug('Field label is: '+fieldLabel);
+    		
+    	System.assert(F != null, fieldHistory);
     	
     	if(oldValue == null && newValue == null){
     		result = fieldLabel+' modified';
