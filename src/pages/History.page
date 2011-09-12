@@ -1,5 +1,4 @@
 <apex:page controller="HistoryControllerExtension">
-Chatter: {!thisHistory.includeChatter}
 <apex:pageBlock >
 	<apex:outputLink value="/apex/vfem_IncidentHistory?id={!$CurrentPage.parameters.id}&popout=true" target="_blank" rendered="{!IF($CurrentPage.parameters.popout = 'true','false','true')}">View in a new window</apex:outputLink>
                 <apex:pageBlockTable value="{!thisHistory.events}" var="event">
