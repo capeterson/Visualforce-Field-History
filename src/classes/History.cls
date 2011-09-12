@@ -62,7 +62,7 @@ public with sharing class History {
 					query = 'SELECT id, subject, CreatedById, CreatedDate FROM '+child.getChildsObject().getDescribe().getName()+' WHERE '+child.getField()+' = \''+subject.id+'\'';
 					addActivities( Database.Query(query) );
 					
-				} else if(childName.contains('__History')){
+				} else if(childName.endsWith('History')){
 					if(injectedResults != null ){
 						//this is from inside a test - run some special logic
 						addHistory( injectedResults , 'Record Edited');
