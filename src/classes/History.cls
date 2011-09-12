@@ -148,9 +148,6 @@ public with sharing class History {
 	}
 	private void addHistory(List<FieldHistory> fieldChanges, String eventType){
 		HistoryEvent event;
-		String tableName = objectType.getName();
-		tableName = tableName.replace('__c','');
-		tableName = tableName+'__History';
 		Set<id> userIds = new Set<id>();
 		for(FieldHistory fieldChange:fieldChanges){
 			userIds.add(fieldChange.CreatedById);
