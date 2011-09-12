@@ -54,11 +54,14 @@ public with sharing class History {
 			if(child.getChildSObject().getDescribe().isQueryable()){
 				String query;
 				//Some sObjects are special and delicate like snowflakes.
-				if(childName == 'Note'){
+				if(child.getRelationshipName() == null){ //this handles some weird standard object edge cases
+					continue;
+				} else if(childName == 'Note'){
 					query = 'SELECT id, title, CreatedBy.name, CreatedDate FROM '+child.getChildsObject().getDescribe().getName()+' WHERE '+child.getField()+' = \''+subject.id+'\'';
 					addNotes( Database.Query(query) );
 					
 				} else if(childName == 'Event' || childName == 'Task'){ // :( at the standardness of standard objects
+					System.debug('Running a query on activities for :'+child);
 					query = 'SELECT id, subject, CreatedById, CreatedDate FROM '+child.getChildsObject().getDescribe().getName()+' WHERE '+child.getField()+' = \''+subject.id+'\'';
 					addActivities( Database.Query(query) );
 					
