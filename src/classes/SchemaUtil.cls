@@ -1,7 +1,30 @@
 public with sharing class SchemaUtil {
 	private static Map<String, Schema.SObjectType> globalDescribe;
 	private static Map<String, Map<String, Schema.SObjectField>> fieldDescribes;
+	private static Map<String,Schema.sObjectField> nameFields {
+		get{
+			if(nameFields == null)
+				nameFields = new Map<String,Schema.sObjectField>();
+			return nameFields;
+		}
+		set;
+	}
 	
+	public static Schema.sObjectField getLabelField(Schema.sObjectType subject){
+		Schema.sObjectField result;
+		String objName = subject.getDescribe().getName().toLowerCase();
+		if(nameFields.containsKey(objName)) //cache hit!
+			return nameFields.get(objName);
+		for(Schema.sObjectField f:getFieldDescribes(subject).values()){
+			if(f.getDescribe().isNameField()){
+				result = f;
+				nameFields.put(objName,f);
+				break; 
+			}
+		}
+		return result;
+	}
+
 	/**
 	 * A version of Schema.getpublicDescribe() with caching to help
 	 * avoid govenor limits. It also ensures the sObject types are lower case and that namespaced objects include their namespace.
