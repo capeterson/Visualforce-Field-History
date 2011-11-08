@@ -8,7 +8,7 @@ If you want to help, think about adding support for pulling in chatter tracked f
 
 This repository is avilable under a BSD license for use.
 
-History component in it's default state dropped into a showHeader="false" visualforce page:
+History component in it's default state dropped into a visualforce page:
 
 ![](http://github.com/capeterson/Visualforce-Field-History/raw/master/screenshot-default.png)
 
