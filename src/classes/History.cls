@@ -78,7 +78,8 @@ public with sharing class History {
 				}else if(objectName.contains('PartnerNetwork') 
 					|| objectName == 'ProcessInstance'
 					|| objectName.contains('__Tag')
-					|| objectName == 'EntitySubscription'){ //Some sObjects are there just to make life hard...
+					|| objectName == 'EntitySubscription'
+					|| objectName.endsWith('Feed')){ //Some sObjects are there just to make life hard...
 					continue;
 				}else{
 					Schema.sObjectField nameField = SchemaUtil.getLabelField( child.getChildSObject() );
