@@ -1,3 +1,9 @@
+/*
+add map of child name of query string
+build query in fetch method
+then parse
+*/
+
 /**
  * This class is used to model a full history timeline for an sObject
  * pulling data from most available sources, and showing a unified view.
@@ -5,6 +11,8 @@
  * @author cpeterson
  **/
 public with sharing class History {
+	private static final integer SUBQUERYCOUNT = 10; //the number of subqueries to run per SOQL query. Lower this if you get query too complex errors.
+	
 	public sObject subject {get; set;}
 	public boolean includeChatter {get; private set;}
 	public List<HistoryEvent> events {get; set;}
@@ -49,50 +57,65 @@ public with sharing class History {
 		if(includeChatter)
 			addChatter();
 		HistoryEvent event;
+		Map<String,String> subqueries = new Map<String,String>();
 		for(Schema.Childrelationship child:C){
 			string childName = child.getChildsObject().getDescribe().getName();
+			String relName = child.getRelationshipName();
+			String subqueryString = '';
 			if(child.getChildSObject().getDescribe().isQueryable()){
-				String query;
-				//Some sObjects are special and delicate like snowflakes.
-				if(child.getRelationshipName() == null){ //this handles some weird standard object edge cases
+				String objectName = child.getChildSObject().getDescribe().getName();
+				if(relName == null){ //removes relationships that aren't retrievable with a subquery
 					continue;
-				} else if(childName == 'Note'){
-					query = 'SELECT id, title, CreatedBy.name, CreatedDate FROM '+child.getChildsObject().getDescribe().getName()+' WHERE '+child.getField()+' = \''+subject.id+'\'';
-					addNotes( Database.Query(query) );
-					
-				} else if(childName == 'Event' || childName == 'Task'){ // :( at the standardness of standard objects
-					System.debug('Running a query on activities for :'+child);
-					query = 'SELECT id, subject, CreatedById, CreatedDate FROM '+child.getChildsObject().getDescribe().getName()+' WHERE '+child.getField()+' = \''+subject.id+'\'';
-					addActivities( Database.Query(query) );
-					
-				} else if(childName.endsWith('History')){
+				} else if(objectName.endsWith('History')){
 					if(injectedResults != null ){
 						//this is from inside a test - run some special logic
 						addHistory( injectedResults , 'Record Edited');
 					} else {
-						query = 'SELECT id, field, oldValue, newValue, CreatedById, CreatedDate FROM '+child.getChildsObject().getDescribe().getName()+' WHERE '+child.getField()+' = \''+subject.id+'\'';
+						String query = 'SELECT id, field, oldValue, newValue, CreatedById, CreatedDate FROM '+child.getChildsObject().getDescribe().getName()+' WHERE '+child.getField()+' = \''+subject.id+'\'';
 						addHistory( uglyHack( Database.Query(query) ), 'Record Edited' );
+						continue;
 					}
-				}else if(childName.contains('PartnerNetwork') 
-					|| childName == 'ProcessInstance'
-					|| childName.contains('__Tag')
-					|| childName == 'EntitySubscription'){ //Some sObjects are there just to make life hard...
+				}else if(objectName.contains('PartnerNetwork') 
+					|| objectName == 'ProcessInstance'
+					|| objectName.contains('__Tag')
+					|| objectName == 'EntitySubscription'){ //Some sObjects are there just to make life hard...
 					continue;
-					
-				}else {
-					try{
-						query = 'SELECT id, name, CreatedById, CreatedDate FROM '+child.getChildsObject().getDescribe().getName()+' WHERE '+child.getField()+' = \''+subject.id+'\'';
-						addGeneric( Database.Query(query) );
-					} catch (System.QueryException e){
-						System.debug('Unsupported object found! '+childName);
+				}else{
+					Schema.sObjectField nameField = SchemaUtil.getLabelField( child.getChildSObject() );
+					if(nameField == null){
+						System.debug(LoggingLevel.Error,'No label field found for '+child.getChildSObject());
+						continue; //no label - we can't display the object
 					}
-					
+					subqueryString += '(SELECT id, '+nameField.getDescribe().getName()+', CreatedById, CreatedDate FROM '+relName+')';
+					//addGeneric( Database.Query(query) );
 				}
 			} else {
 				System.debug(child.getChildsObject().getDescribe().getLabel()+' is not queryable.');
+				continue;
+			}
+			subqueries.put(relName,subqueryString);
+			if(subqueries.size() >= SUBQUERYCOUNT){
+				fetchHistory(subqueries);
+				subqueries.clear();
 			}
 		}
+		if(subqueries.size() > 0)
+			fetchHistory(subqueries);
+		
 		quicksort(events, 0, events.size() -1 );
+	}
+	
+	private void fetchHistory(Map<String,String> subqueries){
+		String query = 'SELECT id, ';
+		for(String key:subqueries.keySet()){
+			query += subqueries.get(key) + ', ';
+		}
+		query = query.substring(0, query.length() - 2); //chop off the final space and comma
+		query += ' FROM '+subject.getSObjectType().getDescribe().getName()+' WHERE id = \''+subject.id+'\'';
+		System.debug('Running query: '+query);
+		sObject result = Database.query(query);
+		addSObjects(result,subQueries.keySet());
+		System.debug(LoggingLevel.Error, 'Ran queries!'+ result);
 	}
 
 	private void addChatter(){
@@ -122,33 +145,39 @@ public with sharing class History {
 		}
 		this.addHistory(histories, 'Chatter Tracking');
 	}	
-	private void addNotes(List<Note> notes){
-		HistoryEvent event;
-		for(Note thisNote:notes){
-			event = new HistoryEvent(thisNote.CreatedBy, thisNote.CreatedDate,thisNote.title,'New Note');
-			event.detailId = thisNote.id;
-			events.add(event);
+	
+	private void addSObjects(sObject queryResult, Set<String> relNames){
+		//TODO
+		for(String relName:relNames){
+			List<sObject> objs = queryResult.getSObjects(relName);
+			if(objs == null){
+				System.debug(LoggingLevel.Error,'FAILED! got no objects out of '+queryResult+' for '+relName);
+				continue;	
+			}
+			Set<id> userIds = new Set<id>();
+			for(sObject obj:objs)
+				userIds.add((id)obj.get('CreatedById'));
+			Map<id,User> users = new Map<id,User>([SELECT id, name FROM User WHERE id IN :userIds]);
+			Schema.sObjectType objType = objs.get(0).getSObjectType();
+			Schema.sObjectField labelField = SchemaUtil.getLabelField(objType);
+			if(labelField == null)
+				continue;
+			for(sObject obj:objs){
+				try{HistoryEvent event = new HistoryEvent(
+					(User) users.get( (id) obj.get('CreatedById') ), 
+					DateTime.valueOf( obj.get('CreatedDate') ), 
+					String.valueOf( obj.get(labelField) ), 
+					'New '+objType.getDescribe().getName()
+				);
+				event.detailId = obj.id;
+				events.add(event);
+				}catch(Exception e){
+					System.assert(false,'Fatal: '+obj+' label:'+labelField);
+				}
+			}
 		}
 	}
-	//Adds a list of either tasks or events
-	private void addActivities(List<sObject> activities){
-		HistoryEvent event;
-		string activityType;
-		Map<id,User> users = new Map<id,User>([SELECT id, name FROM User WHERE id IN :Util.getIdFields(activities,'CreatedById')]);
-		
-		
-		for(sObject thisActivity:activities){
-			if( activityType == null ) { activityType = thisActivity.getSObjectType().getDescribe().getLabel(); } 
-			event = new HistoryEvent(
-				(User) users.get( (id) thisActivity.get('CreatedById') ),
-				DateTime.valueOf( thisActivity.get('CreatedDate') ),
-				String.valueOf( thisActivity.get('subject') ),
-				'New '+activityType);
-			event.detailId = thisActivity.id;
-			events.add(event);
-
-		}
-	}
+	
 	private void addHistory(List<FieldHistory> fieldChanges, String eventType){
 		HistoryEvent event;
 		Set<id> userIds = new Set<id>();
