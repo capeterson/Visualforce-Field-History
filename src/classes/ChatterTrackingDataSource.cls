@@ -14,7 +14,7 @@ public with sharing class ChatterTrackingDataSource implements DataSource.Provid
 		return 'Chatter';
 	}
 	
-	public List<DataSource.Event> getEvents(DateTime startTime,DateTime endTime){
+	public List<DataSource.Event> getEvents(){
 		List<DataSource.Event> result = new List<DataSource.Event>();
 		String feedName;
 		Schema.DescribeSObjectResult describe = subject.getSObjectType().getDescribe();

@@ -1,8 +1,8 @@
-public with sharing class DataSDateource {
+public with sharing class DataSource {
 	public interface Provider{
 		String getProviderName();
 		String getProviderLabel();
-		List<DataSource.Event> getEvents(DateTime startTime,DateTime endTime);
+		List<DataSource.Event> getEvents();
 	}
 	
 	/**
@@ -27,14 +27,23 @@ public with sharing class DataSDateource {
 		public virtual DateTime getTimestamp(){
 			return timestamp;
 		}
+		public virtual String getLocalizedTimestamp(){
+			return timestamp.format();
+		}
 		public virtual String getDescription(){
 			return description;
 		}
 		public virtual Id getActorId(){
 			return actor;
 		}
+		public virtual String getDetailURL(){
+			return detailURL;
+		}
 		public virtual String getProviderName(){
 			return dataProvider.getProviderName();
+		}
+		public virtual String getProviderLabel(){
+			return dataProvider.getProviderLabel();
 		}
 		
 		 

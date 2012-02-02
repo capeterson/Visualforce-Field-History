@@ -12,7 +12,7 @@ public with sharing class FieldHistoryDataSource implements DataSource.Provider{
 	public String getProviderLabel(){
 		return 'Field History Tracking';
 	}
-	public List<DataSource.Event> getEvents(DateTime startTime, DateTime endTime){
+	public List<DataSource.Event> getEvents(){
 		events.clear();
 		/*if(injectedResults != null ){
 			//this is from inside a test - run some special logic
@@ -26,7 +26,7 @@ public with sharing class FieldHistoryDataSource implements DataSource.Provider{
 				tblName = describe.getName() + 'History'; 
 			}
 			String query = 'SELECT id, field, oldValue, newValue, CreatedById, CreatedDate FROM ' +
-				tblName+' WHERE ContactId = \''+subject.id+'\' AND CreatedDate >= '+startTime.format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\'')+' AND CreatedDate <= '+endTime.format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\'');
+				tblName+' WHERE ContactId = \''+subject.id+'\'';
 			System.debug('Query to run: '+query);
 			addHistory( Database.Query(query) );
 		//}
