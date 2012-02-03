@@ -2,7 +2,7 @@ public with sharing class FieldHistoryDataSource implements DataSource.Provider{
 	private List<DataSource.Event> events;
 	private sObject subject;
 	
-	public FieldHistoryDataSource(sObject subject){
+	public void init(sObject subject){
 		this.subject = subject;
 		events = new List<DataSource.Event>();	
 	}

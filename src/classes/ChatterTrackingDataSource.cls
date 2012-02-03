@@ -1,7 +1,7 @@
 public with sharing class ChatterTrackingDataSource implements DataSource.Provider{
 	private sObject subject;
 	
-	public ChatterTrackingDataSource(sObject subject){
+	public void init(sObject subject){
 		if(!SchemaUtil.isOrgChatterEnabled())
 			System.assert(false,'Cannot create a ChatterTrackingDataSource if chatter is disabled!');
 		this.subject = subject;
