@@ -11,8 +11,8 @@ public with sharing class DataSource {
 	 * Implementations of the Provider interface should not rely on having their constructor called!
 	 **/
 	public interface Provider{
-		String getProviderName();
-		String getProviderLabel();
+		String getName();
+		String getLabel();
 		List<DataSource.Event> getEvents();
 		/**
 		 * Providers may be instantiated dynamically at runtime and in this case the constructor is never called.
@@ -31,11 +31,11 @@ public with sharing class DataSource {
 		private DateTime timestamp;
 		private String description;
 		private Id actor;
-		private Provider dataProvider;
+		private List<Provider> dataProviders;
 		private String detailURL;
 		
 		public Event(Provider provider, DateTime timestamp, String description, Id actor, String detailUrl){
-			this.dataProvider = provider;
+			this.dataProviders = new List<Provider>{ provider };
 			this.timestamp = timestamp;
 			this.description = description;
 			this.actor = actor;
@@ -57,11 +57,17 @@ public with sharing class DataSource {
 		public virtual String getDetailURL(){
 			return detailURL;
 		}
-		public virtual String getProviderName(){
-			return dataProvider.getProviderName();
+		public virtual Set<String> getProviderName(){
+			Set<String> result = new Set<String>();
+			for(DataSource.Provider p: dataProviders)
+				result.add(p.getName());
+			return result;
 		}
-		public virtual String getProviderLabel(){
-			return dataProvider.getProviderLabel();
+		public virtual Set<String> getProviderLabel(){
+			Set<String> result = new Set<String>();
+			for(DataSource.Provider p: dataProviders)
+				result.add(p.getLabel());
+			return result;
 		}
 		
 		 
