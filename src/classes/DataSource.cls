@@ -1,8 +1,26 @@
 public with sharing class DataSource {
+	/**
+	 * This interface represents a source of some kind of history data. Standard implementations include:
+	 * - Chatter field history tracking
+	 * - Boring old field history tracking
+	 * - Related object creation
+	 * 
+	 * Custom data sources can be used by the Timeline class by implementing this interface
+	 * and calling it's addProvider method. 
+	 
+	 * Implementations of the Provider interface should not rely on having their constructor called!
+	 **/
 	public interface Provider{
 		String getProviderName();
 		String getProviderLabel();
 		List<DataSource.Event> getEvents();
+		/**
+		 * Providers may be instantiated dynamically at runtime and in this case the constructor is never called.
+		 * in these cases the init method will be called instead. You should ideally just call init from your constructor
+		 * and do all variable initialization in this method.
+		 * @author capeterson
+		 **/
+		void init(sObject subject);
 	}
 	
 	/**
