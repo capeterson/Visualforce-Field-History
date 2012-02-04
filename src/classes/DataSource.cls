@@ -28,11 +28,14 @@ public with sharing class DataSource {
 	 * or may be used as is if no custom behavior is needed.
 	**/
 	public virtual class Event{
-		private DateTime timestamp;
-		private String description;
-		private Id actor;
-		private List<Provider> dataProviders;
-		private String detailURL;
+		protected String target; //the field or related object being operated on
+		protected DateTime timestamp;
+		protected String description;
+		protected Id actor;
+		protected List<Provider> dataProviders;
+		protected String detailURL;
+		
+		protected Event(){}
 		
 		public Event(Provider provider, DateTime timestamp, String description, Id actor, String detailUrl){
 			this.dataProviders = new List<Provider>{ provider };
@@ -42,6 +45,9 @@ public with sharing class DataSource {
 			this.detailURL = detailURL;
 		}
 		
+		public virtual String getTarget(){
+			return target;
+		}
 		public virtual DateTime getTimestamp(){
 			return timestamp;
 		}
@@ -57,13 +63,13 @@ public with sharing class DataSource {
 		public virtual String getDetailURL(){
 			return detailURL;
 		}
-		public virtual Set<String> getProviderName(){
+		public virtual Set<String> getProviderNames(){
 			Set<String> result = new Set<String>();
 			for(DataSource.Provider p: dataProviders)
 				result.add(p.getName());
 			return result;
 		}
-		public virtual Set<String> getProviderLabel(){
+		public virtual Set<String> getProviderLabels(){
 			Set<String> result = new Set<String>();
 			for(DataSource.Provider p: dataProviders)
 				result.add(p.getLabel());
