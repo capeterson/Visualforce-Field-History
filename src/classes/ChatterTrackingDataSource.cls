@@ -7,10 +7,10 @@ public with sharing class ChatterTrackingDataSource implements DataSource.Provid
 		this.subject = subject;
 	}
 	
-	public String getProviderName(){
+	public String getName(){
 		return 'ChatterTracking';
 	}
-	public String getProviderLabel(){
+	public String getLabel(){
 		return 'Chatter';
 	}
 	
@@ -22,23 +22,28 @@ public with sharing class ChatterTrackingDataSource implements DataSource.Provid
 		if(describe.isCustom()){ //feeds have different naming schemes for standard vs custom objects
 			feedName = describe.getName().replace('__c', '__Feed');
 		}else{
-			feedName = describe.getName() + 'Feed'; 
+			feedName = describe.getName() + 'Feed';
 		}
-		String queryString = 'SELECT id, CreatedDate, CreatedById, (SELECT id, fieldName, oldValue, newValue FROM FeedTrackedChanges) FROM '+feedName+' WHERE parentId = \''+subject.id+'\' AND Type = \'TrackedChange\'';
-		System.debug('Running query: '+queryString);
+		String queryString = 'SELECT id, CreatedDate, CreatedById, (SELECT id, fieldName, oldValue, newValue FROM FeedTrackedChanges ORDER BY Id) FROM '+feedName+' WHERE parentId = \''+subject.id+'\' AND Type = \'TrackedChange\'';
 		for(sObject item:Database.query(queryString)){
+			FieldHistoryDataSource.FieldUpdateEvent lastEvent;
 			for(FeedTrackedChange fieldChange:item.getSObjects('FeedTrackedChanges')){
 				String fieldName = (''+fieldChange.get('FieldName')).replaceFirst('.+\\.','').toLowerCase();
-				String fieldLabel = SchemaUtil.getFieldDescribes(subject.getSObjectType()).get( fieldName ).getDescribe().getLabel();
-				result.add( 
-					new DataSource.Event(
-						this,
-						(DateTime) item.get('createdDate'),
-						fieldLabel + ' changed from "' + fieldChange.get('oldValue') + '" to "' + fieldChange.get('newValue')+ '".',
-						(Id) item.get('CreatedById'),
-						null
-					)
+				FieldHistoryDataSource.FieldUpdateEvent event = new FieldHistoryDataSource.FieldUpdateEvent(
+					this,
+					(DateTime) item.get('createdDate'),
+					(Id) item.get('CreatedById'),
+					fieldName,
+					fieldChange.get('oldValue'),
+					fieldChange.get('newValue')
 				);
+				if(lastEvent != null && lastEvent.getTimestamp() == event.getTimestamp() && lastEvent.getTarget() == event.getTarget()){
+					lastEvent.oldLookupId = (Id) event.oldValue;
+					lastEvent.newLookupId = (Id) event.newValue;
+				}else{
+					result.add(event);
+				}
+				lastEvent = event;
 			}
 		}
 		return result;
