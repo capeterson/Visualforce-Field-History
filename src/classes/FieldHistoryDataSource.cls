@@ -6,10 +6,10 @@ public with sharing class FieldHistoryDataSource implements DataSource.Provider{
 		this.subject = subject;
 		events = new List<DataSource.Event>();	
 	}
-	public String getProviderName(){
+	public String getName(){
 		return 'FieldHistory';
 	}
-	public String getProviderLabel(){
+	public String getLabel(){
 		return 'Field History Tracking';
 	}
 	public List<DataSource.Event> getEvents(){
@@ -26,7 +26,7 @@ public with sharing class FieldHistoryDataSource implements DataSource.Provider{
 				tblName = describe.getName() + 'History'; 
 			}
 			String query = 'SELECT id, field, oldValue, newValue, CreatedById, CreatedDate FROM ' +
-				tblName+' WHERE ContactId = \''+subject.id+'\'';
+				tblName+' WHERE ContactId = \''+subject.id+'\' ORDER BY Id';
 			System.debug('Query to run: '+query);
 			addHistory( Database.Query(query) );
 		//}
@@ -34,8 +34,7 @@ public with sharing class FieldHistoryDataSource implements DataSource.Provider{
 	}
 
 	private void addHistory(List<sObject> fieldChanges){
-		DataSource.Event event;
-		
+		FieldUpdateEvent lastEvent;		
 		for(sObject fieldChange:fieldChanges){
 			String oldValue = ''+ fieldChange.get('oldValue');
 			String newValue = ''+ fieldChange.get('newValue');
@@ -48,14 +47,42 @@ public with sharing class FieldHistoryDataSource implements DataSource.Provider{
 			}*/
 			
 			String description = fieldChange.get('Field') + ' changed from "'+oldValue+'" to "'+newValue+'"';
-			event = new DataSource.Event(
+			FieldUpdateEvent event = new FieldUpdateEvent(
 				this,
 				(DateTime) fieldChange.get('CreatedDate'), 
-				description,
 				(id)fieldChange.get('CreatedById'),
-				null
+				(String) fieldChange.get('Field'),
+				oldValue,
+				newValue
 			);
-			events.add(event);
+			//a hack for the fact that lookup changes generate two history objects
+			if(lastEvent != null && lastEvent.getTimestamp() == event.getTimestamp() && lastEvent.getTarget() == event.getTarget()){
+				lastEvent.oldLookupId = (Id) event.oldValue;
+				lastEvent.newLookupId = (Id) event.newValue;
+			}else{
+				events.add(event);
+			}
+			lastEvent = event;
+		}
+	}
+	
+	public class FieldUpdateEvent extends DataSource.Event{
+		public Object oldValue {public get; protected set;}
+		public Object newValue {public get; protected set;}
+		public Id oldLookupId {get; set;}
+		public Id newLookupId {get; set;}
+		
+		public FieldUpdateEvent(Provider provider, DateTime timestamp, Id actor, String fieldName, Object oldValue, Object newValue){
+			this.dataProviders = new List<Provider>{ provider };
+			this.timestamp = timestamp;
+			this.actor = actor;
+			this.target = fieldName;
+			this.oldValue = oldValue;
+			this.newValue = newValue;
+		}
+		
+		public override String getDescription(){
+			return target + ' changed from "'+oldValue+'" to "'+newValue+'"'; //need to translate the name into label!
 		}
 	}
 }
