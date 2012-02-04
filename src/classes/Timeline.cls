@@ -8,12 +8,15 @@ public with sharing class Timeline {
 		orderDesc = true;
 	}
 	public void addProvider(DataSource.Provider p){
-		String providerName = p.getProviderName();
+		String providerName = p.getName();
 		if(providers.containsKey(providerName)){
-			System.assert(false,'Provider name '+providerName+' is not unique!');
+			throw new DuplicateProviderException('Provider name '+providerName+' is not unique!');
 		}else{
 			providers.put(providerName,p);
 		}
+	}
+	public List<DataSource.Provider> getProviders(){
+		return providers.values();
 	}
 	private void buildEventHistory(){
 		eventHistory = new Map<DateTime,List<DataSource.Event>>();
@@ -30,6 +33,7 @@ public with sharing class Timeline {
 			}
 		}
 	}
+	
 	public List<DataSource.Event> getEvents(){
 		if(eventHistory == null)
 			buildEventHistory();
@@ -44,4 +48,6 @@ public with sharing class Timeline {
 		}
 		return result;
 	}
+	
+	public class DuplicateProviderException extends Exception{}
 }
