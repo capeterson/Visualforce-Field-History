@@ -12,6 +12,9 @@ public with sharing class FieldHistoryDataSource implements DataSource.Provider{
 	public String getLabel(){
 		return 'Field History Tracking';
 	}
+	public String getImageURL(){
+		return 'http://www.iconshock.com/img_jpg/REALVISTA/education_icons/jpg/128/history_icon.jpg';
+	}
 	public List<DataSource.Event> getEvents(){
 		events.clear();
 		/*if(injectedResults != null ){
@@ -57,8 +60,10 @@ public with sharing class FieldHistoryDataSource implements DataSource.Provider{
 			);
 			//a hack for the fact that lookup changes generate two history objects
 			if(lastEvent != null && lastEvent.getTimestamp() == event.getTimestamp() && lastEvent.getTarget() == event.getTarget()){
-				lastEvent.oldLookupId = (Id) event.oldValue;
-				lastEvent.newLookupId = (Id) event.newValue;
+				if(event.oldValue != null && event.oldValue != 'null')
+					lastEvent.oldLookupId = (Id) event.oldValue;
+				if(event.newValue != null && event.newValue != 'null')
+					lastEvent.newLookupId = (Id) event.newValue;
 			}else{
 				events.add(event);
 			}
@@ -69,8 +74,8 @@ public with sharing class FieldHistoryDataSource implements DataSource.Provider{
 	public class FieldUpdateEvent extends DataSource.Event{
 		public Object oldValue {public get; protected set;}
 		public Object newValue {public get; protected set;}
-		public Id oldLookupId {get; set;}
-		public Id newLookupId {get; set;}
+		public String oldLookupId {get; set;}
+		public String newLookupId {get; set;}
 		
 		public FieldUpdateEvent(Provider provider, DateTime timestamp, Id actor, String fieldName, Object oldValue, Object newValue){
 			this.dataProviders = new List<Provider>{ provider };
@@ -79,6 +84,10 @@ public with sharing class FieldHistoryDataSource implements DataSource.Provider{
 			this.target = fieldName;
 			this.oldValue = oldValue;
 			this.newValue = newValue;
+		}
+		
+		public override String getShortDescription(){
+			return target+' changed to "'+newValue+'"';
 		}
 		
 		public override String getDescription(){
