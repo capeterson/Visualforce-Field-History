@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ApexComponent xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>22.0</apiVersion>
+    <apiVersion>24.0</apiVersion>
     <description>This component is used to build a list of field history changes for any sObject, and display them in a table - similar to the salesforce standard layout field history related list.</description>
     <label>History</label>
 </ApexComponent>

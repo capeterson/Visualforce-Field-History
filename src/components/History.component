@@ -1,33 +1,45 @@
 <apex:component controller="ComponentHistory">
-    <!-- This component takes any queryable sObject and aggregates field history and child objects into a single chronologically sorted table.
+	<!-- This component takes any queryable sObject and aggregates field history and child objects into a single chronologically sorted table.
         Detail or linked objects being added will result in a clickable link to that object. -->
-        
-    <apex:attribute name="subject" assignTo="{!subject}" required="true" type="sObject"
-        description="The sObject for this component to show the history for." />
-    
+	<apex:attribute name="subject" assignTo="{!subject}" required="true" type="sObject"
+		description="The sObject for this component to show the history for." />
+
     {!init}
-    
+
     <apex:pageBlock >
-    	<apex:pageBlockTable value="{!thisHistory.events}" var="event">
-    		<apex:column >
-                <apex:facet name="header">Timestamp</apex:facet>
-                <apex:outputText value="{!event.formatted}" />
-            </apex:column> 
-            <apex:column width="15%">
-                <apex:facet name="header">Action</apex:facet>
-                <apex:outputText value="{!event.eventType}" />
-            </apex:column>
-            <apex:column >
-                <apex:facet name="header">Description</apex:facet>
-                <apex:outputLink value="/{!event.detailID}" rendered="{!NOT(ISNULL(event.detailID))}" target="_blank">
-                    <apex:outputText value="{!event.description}" />
-                </apex:outputLink>
-                <apex:outputText value="{!event.description}" rendered="{!ISNULL(event.detailID)}" />
-            </apex:column>
-            <apex:column >
-                <apex:facet name="header">Modified By</apex:facet>
-                <apex:outputText value="{!event.modifiedBy.name}" />
-            </apex:column>
-    	</apex:pageBlockTable>
-   	</apex:pageBlock>
+		<apex:pageBlockTable value="{!events}" var="event">
+			<apex:column >
+				<apex:facet name="header">Source</apex:facet>
+				<apex:repeat value="{!event.providers}" var="provider">
+					<div class="provider_name {!provider.name}">
+						<apex:image value="{!provider.imageURL}" width="16px" height="16px" title="{!provider.label}" />
+					</div>
+				</apex:repeat>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">Timestamp</apex:facet>
+				<apex:outputText value="{!event.localizedTimestamp}" />
+			</apex:column>
+			<apex:column width="15%">
+				<apex:facet name="header">Action</apex:facet>
+				<apex:repeat value="{!event.providerLabels}" var="providerLabel">
+					<apex:outputText value="{!providerLabel} " />
+				</apex:repeat>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">Description</apex:facet>
+				<apex:outputLink value="{!event.detailURL}" rendered="{!NOT(ISNULL(event.detailURL))}" target="_blank">
+					<apex:outputText value="{!event.description}" />
+				</apex:outputLink>
+				<apex:outputText value="{!event.description}" rendered="{!ISNULL(event.detailURL)}" />
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">Modified By</apex:facet>
+				<apex:outputLink value="/{!event.actorId}">
+					<apex:outputText value="{!actors[event.actorId].name}" />
+				</apex:outputLink>
+			</apex:column>
+		</apex:pageBlockTable>
+	</apex:pageBlock>
+
 </apex:component>
