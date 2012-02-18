@@ -1,4 +1,7 @@
 public with sharing class ChatterTrackingDataSource implements DataSource.Provider{
+	public static final String PROVIDER_NAME = 'ChatterTracking';
+	public static final String PROVIDER_LABEL = 'Chatter';
+	public static final String IMAGE_URL = 'http://a1.mzstatic.com/us/r1000/035/Purple/5e/7f/87/mzl.sjmcmbqs.100x100-75.jpg';
 	private sObject subject;
 	
 	public void init(sObject subject){
@@ -8,13 +11,13 @@ public with sharing class ChatterTrackingDataSource implements DataSource.Provid
 	}
 	
 	public String getName(){
-		return 'ChatterTracking';
+		return PROVIDER_NAME;
 	}
 	public String getLabel(){
-		return 'Chatter';
+		return PROVIDER_LABEL;
 	}
 	public String getImageURL(){
-		return 'http://a1.mzstatic.com/us/r1000/035/Purple/5e/7f/87/mzl.sjmcmbqs.100x100-75.jpg';
+		return IMAGE_URL;
 	}
 	
 	public List<DataSource.Event> getEvents(){
