@@ -6,7 +6,7 @@ public with sharing class ChatterTrackingDataSource implements DataSource.Provid
 	
 	public void init(sObject subject){
 		if(!SchemaUtil.isOrgChatterEnabled())
-			System.assert(false,'Cannot create a ChatterTrackingDataSource if chatter is disabled!');
+			throw new ChatterDisabledException('Cannot create a ChatterTrackingDataSource if chatter is disabled!');
 		this.subject = subject;
 	}
 	
@@ -55,4 +55,5 @@ public with sharing class ChatterTrackingDataSource implements DataSource.Provid
 		return result;
 	}
 	
+	public class ChatterDisabledException extends Exception{}
 }
