@@ -3,28 +3,30 @@
         Detail or linked objects being added will result in a clickable link to that object. -->
 	<apex:attribute name="subject" assignTo="{!subject}" required="true" type="sObject"
 		description="The sObject for this component to show the history for." />
+	<apex:attribute name="PluginNames" assignTo="{!pluginNames}" required="false" type="String[]"
+		description="A list of apex class names that implement the DataSource.Provider to be loaded and added into the timeline." />
 
     {!init}
-
+	<style>
+		img.provider_icon{
+			margin-right: auto;
+			margin-left: auto; 
+			float: left;
+		}
+	</style>
     <apex:pageBlock >
 		<apex:pageBlockTable value="{!events}" var="event">
 			<apex:column >
-				<apex:facet name="header">Source</apex:facet>
+				<apex:facet name="header">Event Source</apex:facet>
 				<apex:repeat value="{!event.providers}" var="provider">
 					<div class="provider_name {!provider.name}">
-						<apex:image value="{!provider.imageURL}" width="16px" height="16px" title="{!provider.label}" />
+						<apex:image styleClass="provider_icon" value="{!provider.imageURL}" width="16px" height="16px" title="{!provider.label}" />
 					</div>
 				</apex:repeat>
 			</apex:column>
 			<apex:column >
 				<apex:facet name="header">Timestamp</apex:facet>
 				<apex:outputText value="{!event.localizedTimestamp}" />
-			</apex:column>
-			<apex:column width="15%">
-				<apex:facet name="header">Action</apex:facet>
-				<apex:repeat value="{!event.providerLabels}" var="providerLabel">
-					<apex:outputText value="{!providerLabel} " />
-				</apex:repeat>
 			</apex:column>
 			<apex:column >
 				<apex:facet name="header">Description</apex:facet>
