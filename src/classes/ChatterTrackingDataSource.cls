@@ -13,6 +13,9 @@ public with sharing class ChatterTrackingDataSource implements DataSource.Provid
 	public String getLabel(){
 		return 'Chatter';
 	}
+	public String getImageURL(){
+		return 'http://a1.mzstatic.com/us/r1000/035/Purple/5e/7f/87/mzl.sjmcmbqs.100x100-75.jpg';
+	}
 	
 	public List<DataSource.Event> getEvents(){
 		List<DataSource.Event> result = new List<DataSource.Event>();
