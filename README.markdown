@@ -10,7 +10,3 @@ This repository is avilable under a BSD license for use.
 History component in it's default state dropped into a visualforce page:
 
 ![](http://github.com/capeterson/Visualforce-Field-History/raw/master/screenshot-default.png)
-
-History component used in it's original form in Bluehawk InSite:
-
-![](http://github.com/capeterson/Visualforce-Field-History/raw/master/screenshot.png)
