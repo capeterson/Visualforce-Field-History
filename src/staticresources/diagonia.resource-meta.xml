@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
+    <cacheControl>Public</cacheControl>
+    <contentType>application/zip</contentType>
+    <description>Diagona Icons
+
+Copyright (C) 2007 Yusuke Kamiyamane. All rights reserved.
+The icons are licensed under a Creative Commons Attribution
+3.0 license. &lt;http://creativecommons.org/licenses/by/3.0/&gt;</description>
+</StaticResource>
