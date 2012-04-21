@@ -13,7 +13,7 @@ public with sharing class FieldHistoryDataSource implements DataSource.Provider{
 		return 'Field History Tracking';
 	}
 	public String getImageURL(){
-		return 'http://www.iconshock.com/img_jpg/REALVISTA/education_icons/jpg/128/history_icon.jpg';
+		return '/resource/diagonia/icons/16/165.png';
 	}
 	public List<DataSource.Event> getEvents(){
 		events.clear();
