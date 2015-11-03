@@ -9,4 +9,4 @@ This repository is avilable under a BSD license for use.
 
 History component in it's default state dropped into a visualforce page:
 
-![](http://github.com/capeterson/Visualforce-Field-History/raw/master/screenshot-default.png)
+![](https://raw.githubusercontent.com/capeterson/Visualforce-Field-History/master/screenshot-default.png)
